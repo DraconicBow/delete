@@ -63,7 +63,7 @@ function init() {
     );
 
     // 7. Настройка освещения
-    directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(5, 5, 5);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
