@@ -28,9 +28,9 @@ function init() {
     const textureLoader = new THREE.TextureLoader();
     
     const textures = {
-        map: textureLoader.load('src/textures/Plaster006_1K-JPG_Color.jpg'),
-        normalMap: textureLoader.load('src/textures/ Plaster006_1K-JPG_NormalDX.jpg'),
-        roughnessMap: textureLoader.load('src/textures/Plaster006_1K-JPG_Roughness.jpg')
+        map: textureLoader.load('src/textures/plaster_color.jpg'),
+        normalMap: textureLoader.load('src/textures/plaster_normal.jpg'),
+        roughnessMap: textureLoader.load('src/textures/plaster_roughness.jpg')
     };
 
     // 5. Создание материала
