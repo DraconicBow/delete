@@ -7,7 +7,7 @@ animate();
 function init() {
     // 1. Создание сцены
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeeeeee);
+    scene.background = new THREE.Color(0xcccccc);
 
     // 2. Настройка камеры
     camera = new THREE.PerspectiveCamera(
