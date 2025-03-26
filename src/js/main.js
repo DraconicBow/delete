@@ -1,59 +1,113 @@
-let scene, camera, renderer, controls, light;
+// Инициализация сцены, камеры и рендерера
+let scene, camera, renderer, controls, directionalLight;
 
 init();
 animate();
 
 function init() {
-    // Scene setup
+    // 1. Создание сцены
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    scene.background = new THREE.Color(0xeeeeee);
+
+    // 2. Настройка камеры
+    camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(2, 2, 2);
+
+    // 3. Инициализация рендерера
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
-    // Lighting
-    light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040));
+    // 4. Загрузка текстур
+    const textureLoader = new THREE.TextureLoader();
+    
+    const textures = {
+        map: textureLoader.load('src/textures/Plaster006_1K-JPG_Color.jpg'),
+        normalMap: textureLoader.load('src/textures/ Plaster006_1K-JPG_NormalDX.jpg'),
+        roughnessMap: textureLoader.load('src/textures/Plaster006_1K-JPG_Roughness.jpg')
+    };
 
-    // Controls
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    camera.position.z = 3;
-
-    // Materials
-    const plasterTexture = new THREE.TextureLoader().load('src/textures/plaster_01.jpg');
-    const material = new THREE.MeshPhongMaterial({
-        map: plasterTexture,
-        bumpScale: 0.05,
-        shininess: 10
+    // 5. Создание материала
+    const material = new THREE.MeshStandardMaterial({
+        map: textures.map,
+        normalMap: textures.normalMap,
+        roughnessMap: textures.roughnessMap,
+        roughness: 0.8,
+        metalness: 0.0
     });
 
-    // Model loading
+    // 6. Загрузка модели
     const loader = new THREE.GLTFLoader();
-    loader.load('src/models/cube.glb', function(gltf) {
-        gltf.scene.traverse(child => {
-            if (child.isMesh) child.material = material;
-        });
-        scene.add(gltf.scene);
-    });
+    loader.load(
+        'src/models/cube.glb',
+        (gltf) => {
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = material;
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            scene.add(gltf.scene);
+        },
+        undefined,
+        (error) => {
+            console.error('Error loading model:', error);
+        }
+    );
 
-    // GUI Controls
-    const gui = new dat.GUI();
-    gui.add(light.position, 'x', -10, 10).name('Light X');
-    gui.add(light.position, 'y', -10, 10).name('Light Y');
-    gui.add(light.position, 'z', -10, 10).name('Light Z');
+    // 7. Настройка освещения
+    directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(5, 5, 5);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+    // 8. Настройка OrbitControls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = true;
+    controls.minDistance = 1;
+    controls.maxDistance = 10;
+
+    // 9. Обработчик изменения размера окна
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
     controls.update();
+    renderer.render(scene, camera);
 }
 
-// Responsive handling
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+// 10. Инициализация GUI для управления светом
+const gui = new dat.GUI();
+const lightFolder = gui.addFolder('Directional Light');
+lightFolder.add(directionalLight.position, 'x', -10, 10).name('Position X');
+lightFolder.add(directionalLight.position, 'y', -10, 10).name('Position Y');
+lightFolder.add(directionalLight.position, 'z', -10, 10).name('Position Z');
+lightFolder.add(directionalLight, 'intensity', 0, 5).name('Intensity');
+lightFolder.open();
+
+// 11. Добавим плоскость для отбрасывания теней
+const planeGeometry = new THREE.PlaneGeometry(10, 10);
+const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = -Math.PI / 2;
+plane.position.y = -1;
+plane.receiveShadow = true;
+scene.add(plane);
