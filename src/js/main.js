@@ -45,7 +45,7 @@ function init() {
     // 6. Загрузка модели
     const loader = new THREE.GLTFLoader();
     loader.load(
-        'src/models/cube.glb',
+        '/src/models/cube.glb',
         (gltf) => {
             gltf.scene.traverse((child) => {
                 if (child.isMesh) {
