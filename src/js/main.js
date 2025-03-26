@@ -31,7 +31,7 @@ function init() {
 
     // Model loading
     const loader = new THREE.GLTFLoader();
-    loader.load('src/models/sculpture.glb', function(gltf) {
+    loader.load('src/models/cube.glb', function(gltf) {
         gltf.scene.traverse(child => {
             if (child.isMesh) child.material = material;
         });
